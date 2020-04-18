@@ -20,9 +20,9 @@ namespace FileQueueWatcher
 
         private static void SetupStaticLogger()
         {
-        
+            var environmentName = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
             var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
+                .AddJsonFile($"appsettings.{environmentName}.json")
                 .Build();
 
             Log.Logger = new LoggerConfiguration()
