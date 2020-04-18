@@ -1,0 +1,11 @@
+[
+  {
+    "Path": "C:\\temp",
+    "Description": "Temp"
+  },
+  {
+    "Path": "C:\\temp\\test",
+    "Description": "Test Temp",
+    "Rename": false
+  }
+]

@@ -9,19 +9,33 @@ namespace FileQueueWatcher
         private string monitoredPath;
         private System.IO.FileSystemWatcher fileSystemWatcher;
 
-        public DirectoryMonitor(string path)
+        public DirectoryMonitor(Monitor monitor)
         {
-            monitoredPath = path;
-            Initialise();
+            monitoredPath = monitor.Path;
+            Initialise(monitor);
         }
 
-        private void Initialise()
+        private void Initialise(Monitor monitor)
         {
             fileSystemWatcher = new FileSystemWatcher();
             fileSystemWatcher.Path = monitoredPath;
-            fileSystemWatcher.Created += HandleCreatedEvent;
-            fileSystemWatcher.Renamed += HandleRenamedEvent;
-            fileSystemWatcher.Deleted += HandleDeletedEvent;
+            if (monitor.Create)
+            {
+                fileSystemWatcher.Created += HandleCreatedEvent;
+            }
+            if (monitor.Rename)
+            {
+                fileSystemWatcher.Renamed += HandleRenamedEvent;
+            }
+            if (monitor.Delete)
+            {
+                fileSystemWatcher.Deleted += HandleDeletedEvent;
+            }
+            if (monitor.Modify)
+            {
+                fileSystemWatcher.Changed += HandleModifiedEvent;
+            }
+            // TO DO : ADD File Filters (watcher.Filters.Add("*.yaml");)
         }
 
         public void StartMonitor()
@@ -43,7 +57,10 @@ namespace FileQueueWatcher
 
         private void HandleRenamedEvent(object sender, FileSystemEventArgs e)
         {
-            LogEvent(e.Name, "renamed");
+            if (!IsFolder(e))
+            {
+                LogEvent(e.Name, "renamed");
+            }
         }
 
         private void HandleDeletedEvent(object sender, FileSystemEventArgs e)
@@ -51,9 +68,22 @@ namespace FileQueueWatcher
             LogEvent(e.Name, "deleted");
         }
 
+        private void HandleModifiedEvent(object sender, FileSystemEventArgs e)
+        {
+            if (!IsFolder(e))
+            {
+                LogEvent(e.Name, "modifed");
+            }
+        }
+
         private void LogEvent(string fileName, string action)
         {
             Log.Information("File {FileName} {Action} in {MonitorPath}.", fileName, action, monitoredPath);
+        }
+
+        private bool IsFolder(FileSystemEventArgs e)
+        {
+            return File.GetAttributes(e.FullPath).HasFlag(FileAttributes.Directory);
         }
     }
 }
